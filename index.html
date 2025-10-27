@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html lang="id">
 
@@ -250,9 +252,11 @@
         }
 
         #nextLabel {
-            margin-top: 18px;
-            color: var(--muted);
-            font-size: 20px
+            margin-top: 4px;
+            font-size: 36px;
+            font-weight: 800;
+            color: #6fcf97;
+            text-align: center;
         }
 
         .timer-controls {
@@ -344,6 +348,7 @@
                 style="width:78px;height:78px;background:linear-gradient(135deg,#ff8a9a,#ffb86b);border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:700">
                 ⏱</div>
             <div id="timerTitle">Nama Kegiatan</div>
+            <div id="nextLabel">Selanjutnya: -</div>
         </div>
         <div id="bigTime">00:00</div>
         <div class="stats">
@@ -356,7 +361,7 @@
                 <div class="val" id="elapsed">00:00</div>
             </div>
         </div>
-        <div id="nextLabel">Selanjutnya: -</div>
+        
         <div class="timer-controls">
             <button class="btn ghost" id="pauseBtn">⏸ Jeda</button>
             <button class="btn ghost" id="skipBtn">⏭ Lewati</button>
