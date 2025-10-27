@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Penghitung Waktu Kegiatan</title>
+    <style>
+        :root {
+            --bg: #0b1116;
+            --panel: #24303a;
+            --panel-2: #2b3943;
+            --muted: #98a0ab;
+            --accent: #2db96b;
+            --accent-blue: #4c7bd9;
+            --accent-orange: #ff8a33;
+            --glass: rgba(255, 255, 255, 0.03);
+            --card-radius: 12px;
+            --card-padding: 20px;
+            font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            background: linear-gradient(180deg, #061017 0%, #0b1116 100%);
+            color: #e6eef6;
+        }
+
+        .wrap {
+            max-width: 980px;
+            margin: 28px auto;
+            padding: 12px
+        }
+
+        header {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 18px
+        }
+
+        .logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #ff8a9a, #ffb86b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 32px
+        }
+
+        p.lead {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 14px
+        }
+
+        .card {
+            background: var(--panel-2);
+            border-radius: var(--card-radius);
+            padding: var(--card-padding);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            flex-wrap: wrap
+        }
+
+        .left-title {
+            display: flex;
+            flex-direction: column
+        }
+
+        .title-small {
+            color: #7ee1a6;
+            font-weight: 700;
+            font-size: 18px
+        }
+
+        .total {
+            color: var(--muted);
+            margin-top: 6px
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 12px;
+            flex-wrap: wrap
+        }
+
+        .btn {
+            border: 0;
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px
+        }
+
+        .btn.green {
+            background: var(--accent);
+            color: #072217
+        }
+
+        .btn.blue {
+            background: var(--accent-blue);
+            color: #fff
+        }
+
+        .btn.orange {
+            background: var(--accent-orange);
+            color: #111
+        }
+
+        .btn.ghost {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: var(--muted)
+        }
+
+        .btn.red {
+            background: #e05454;
+            color: #fff
+        }
+
+        .list {
+            margin-top: 18px
+        }
+
+        .item {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 14px;
+            background: var(--panel);
+            border-radius: 10px;
+            margin-bottom: 12px
+        }
+
+        .item input[type=text] {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 0;
+            background: var(--glass);
+            color: inherit;
+            font-size: 15px
+        }
+
+        .item input[type=number] {
+            width: 110px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 0;
+            background: var(--glass);
+            color: inherit;
+            text-align: center;
+            font-weight: 700
+        }
+
+        .trash {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.02);
+            cursor: pointer
+        }
+
+        .bottom-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px
+        }
+
+        .note {
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        /* fullscreen timer overlay (within same page) */
+        #timerOverlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(3, 7, 10, 0.96), rgba(6, 10, 14, 0.96));
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 40px
+        }
+
+        #timerHeader {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 18px
+        }
+
+        #timerTitle {
+            font-size: 64px;
+            font-weight: 700;
+            letter-spacing: 2px
+        }
+
+        #bigTime {
+            font-size: clamp(180px, 25vw, 400px);
+            font-weight: 900;
+            line-height: 0.85;
+            margin: 6px 0;
+            color: #ffffff;
+            text-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+        }
+
+        .stats {
+            display: flex;
+            gap: 50px;
+            margin-top: 10px;
+            align-items: center
+        }
+
+        .stats .block {
+            color: var(--muted);
+            text-align: center
+        }
+
+        .stats .val {
+            font-size: 44px;
+            color: #e9eef6;
+            margin-top: 6px
+        }
+
+        #nextLabel {
+            margin-top: 18px;
+            color: var(--muted);
+            font-size: 20px
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 14px;
+            margin-top: 28px
+        }
+
+        .timer-controls .btn {
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 16px
+        }
+
+        /* responsive */
+        @media (max-width:900px) {
+            #bigTime {
+                font-size: 120px
+            }
+
+            #timerTitle {
+                font-size: 36px
+            }
+
+            .stats .val {
+                font-size: 28px
+            }
+        }
+
+        @media (max-width:520px) {
+            .wrap {
+                padding: 8px
+            }
+
+            #bigTime {
+                font-size: 86px
+            }
+
+            #timerTitle {
+                font-size: 26px
+            }
+
+            .item input[type=number] {
+                width: 80px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <header>
+            <div class="logo">⏱</div>
+            <div>
+                <h1>Penghitung Waktu Kegiatan</h1>
+                <p class="lead">Atur jadwal kegiatan Anda lalu mulai hitung mundur , otomatis berpindah ke kegiatan
+                    berikutnya.</p>
+            </div>
+        </header>
+        <div class="card">
+            <div class="topbar">
+                <div class="left-title">
+                    <div class="title-small">Jadwal Kegiatan</div>
+                    <div class="total">
+                        Total:
+                        <span id="totalMinutes" style="color:#6fcf97;font-weight:800">0 menit</span>
+                    </div>
+                </div>
+                <div class="controls">
+                    <button class="btn green" id="addBtn">+ Tambah Kegiatan</button>
+                    <button class="btn blue" id="startBtn"> Mulai Kegiatan</button>
+                    <button class="btn red" id="resetBtn"> Reset</button>
+                </div>
+            </div>
+            <div class="list" id="list"></div>
+            <div class="bottom-actions">
+                <div style="display:flex;gap:8px">
+                    <button class="btn green" id="stopInline" style="display:none">■ Berhenti</button>
+                    <button class="btn ghost" id="pauseInline" style="display:none">⏸ Jeda</button>
+                    <button class="btn ghost" id="skipInline" style="display:none">⏭ Lewati</button>
+                </div>
+                <div class="note">Simpan otomatis di browser (localStorage)</div>
+            </div>
+        </div>
+    </div>
+    <!-- Timer overlay (fullscreen view) -->
+    <div id="timerOverlay">
+        <div id="timerHeader">
+            <div
+                style="width:78px;height:78px;background:linear-gradient(135deg,#ff8a9a,#ffb86b);border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:700">
+                ⏱</div>
+            <div id="timerTitle">Nama Kegiatan</div>
+        </div>
+        <div id="bigTime">00:00</div>
+        <div class="stats">
+            <div class="block">
+                Sisa Waktu
+                <div class="val" id="remainingTotal">00:00</div>
+            </div>
+            <div class="block">
+                Waktu Berjalan
+                <div class="val" id="elapsed">00:00</div>
+            </div>
+        </div>
+        <div id="nextLabel">Selanjutnya: -</div>
+        <div class="timer-controls">
+            <button class="btn ghost" id="pauseBtn">⏸ Jeda</button>
+            <button class="btn ghost" id="skipBtn">⏭ Lewati</button>
+            <button class="btn red" id="stopBtn">⏹ Berhenti</button>
+        </div>
+    </div>
+    <audio id="ding" src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="></audio>
+    <!-- tiny silent placeholder (browsers require allowed sound; you can replace with real ding) -->
+    <script>
+        // Model & elements
+        let activities = [];
+        const listEl = document.getElementById('list');
+        const addBtn = document.getElementById('addBtn');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const totalMinutesEl = document.getElementById('totalMinutes');
+
+        // inline controls (visible in card while running optionally)
+        const stopInline = document.getElementById('stopInline');
+        const pauseInline = document.getElementById('pauseInline');
+        const skipInline = document.getElementById('skipInline');
+
+        // overlay timer
+        const overlay = document.getElementById('timerOverlay');
+        const bigTime = document.getElementById('bigTime');
+        const timerTitle = document.getElementById('timerTitle');
+        const remainingTotal = document.getElementById('remainingTotal');
+        const elapsedEl = document.getElementById('elapsed');
+        const nextLabel = document.getElementById('nextLabel');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const skipBtn = document.getElementById('skipBtn');
+        const stopBtn = document.getElementById('stopBtn');
+
+        // audio ding (replace src above with real ding if desired)
+        const ding = document.getElementById('ding');
+
+        // timer state
+        let timer = null;
+        let currentIndex = 0;
+        let currentRemaining = 0; // seconds
+        let totalElapsed = 0;
+        let paused = false;
+
+        // Helpers
+        function save() { localStorage.setItem('event_timer_v2', JSON.stringify(activities)); }
+        function load() {
+            try { const raw = localStorage.getItem('event_timer_v2'); if (raw) activities = JSON.parse(raw); } catch (e) { activities = []; } if (!Array.isArray(activities)) activities = []; if (activities.length === 0) { // seed example if empty
+                activities = [
+                    { title: 'Pembukaan', minutes: 10 },
+                    { title: 'Penjelasan', minutes: 20 },
+                    { title: 'Kuis', minutes: 10 },
+                    { title: 'Praktik', minutes: 40 },
+                    { title: 'Penutup', minutes: 10 }
+                ];
+                save();
+            }
+            renderList(); computeTotals();
+        }
+
+        function addActivity(title = 'Kegiatan baru', minutes = 5) {
+            activities.push({ title, minutes: parseInt(minutes) || 0 });
+            save(); renderList(); computeTotals();
+        }
+        function removeActivity(i) { activities.splice(i, 1); save(); renderList(); computeTotals(); }
+
+        function renderList() {
+            listEl.innerHTML = '';
+            activities.forEach((a, i) => {
+                const it = document.createElement('div'); it.className = 'item';
+                const t = document.createElement('input'); t.type = 'text'; t.value = a.title; t.oninput = (e) => { activities[i].title = e.target.value; save(); }
+                const n = document.createElement('input'); n.type = 'number'; n.min = 0; n.value = a.minutes; n.oninput = (e) => { activities[i].minutes = parseInt(e.target.value) || 0; save(); computeTotals(); }
+                const trash = document.createElement('div'); trash.className = 'trash'; trash.title = 'Hapus'; trash.innerHTML = '🗑'; trash.onclick = () => { if (confirm('Hapus kegiatan ini?')) removeActivity(i); }
+                it.appendChild(t); it.appendChild(n); it.appendChild(trash);
+                listEl.appendChild(it);
+            });
+            if (activities.length === 0) {
+                const p = document.createElement('div'); p.style.color = 'var(--muted)'; p.style.padding = '18px'; p.textContent = '(Belum ada kegiatan)'; listEl.appendChild(p);
+            }
+        }
+
+        function computeTotals() {
+            const totalMin = activities.reduce((s, a) => s + (parseInt(a.minutes) || 0), 0);
+            totalMinutesEl.textContent = totalMin + ' menit';
+        }
+
+        function secondsToMMSS(s) {
+            if (s < 0) s = 0;
+            const m = Math.floor(s / 60); const sec = s % 60; return String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+        }
+
+        function updateOverlayUI() {
+            if (currentIndex >= activities.length) {
+                // finished
+                endSession();
+                return;
+            }
+            timerTitle.textContent = activities[currentIndex].title || '-';
+            bigTime.textContent = secondsToMMSS(currentRemaining);
+            elapsedEl.textContent = secondsToMMSS(totalElapsed);
+            // remaining total from current activity inclusive
+            const remainingTotalSeconds = activities.slice(currentIndex).reduce((acc, a, idx) => acc + ((idx === 0 ? currentRemaining : (a.minutes * 60)) || 0), 0);
+            remainingTotal.textContent = secondsToMMSS(remainingTotalSeconds);
+            nextLabel.textContent = 'Selanjutnya: ' + (activities[currentIndex + 1] ? activities[currentIndex + 1].title : '(Selesai)');
+        }
+
+        function startSession() {
+            if (activities.length === 0) { alert('Tambahkan kegiatan terlebih dahulu.'); return; }
+            // enter overlay
+            overlay.style.display = 'flex';
+            currentIndex = 0; totalElapsed = 0; paused = false;
+            currentRemaining = (activities[0].minutes || 0) * 60;
+            updateOverlayUI();
+            // show inline controls
+            stopInline.style.display = 'inline-block';
+            pauseInline.style.display = 'inline-block';
+            skipInline.style.display = 'inline-block';
+            // start tick
+            timer = setInterval(tick, 1000);
+            // scroll to top so fullscreen overlay visible on some small screens
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function tick() {
+            if (paused) return;
+            currentRemaining--; totalElapsed++;
+            if (currentRemaining <= 0) {
+                playDing();
+                // move to next
+                currentIndex++;
+                if (currentIndex >= activities.length) {
+                    updateOverlayUI();
+                    // will end next loop
+                    return;
+                }
+                currentRemaining = (activities[currentIndex].minutes || 0) * 60;
+            }
+            updateOverlayUI();
+        }
+
+        function playDing() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.type = 'sine'; o.frequency.value = 880;
+                g.gain.value = 0.0001;
+                o.connect(g); g.connect(ctx.destination);
+                o.start();
+                g.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + 0.01);
+                g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.25);
+                setTimeout(() => { o.stop(); ctx.close(); }, 300);
+            } catch (e) {
+                try { ding.play(); } catch (err) { }
+            }
+        }
+
+        function pauseToggle() {
+            paused = !paused;
+            pauseBtn.textContent = paused ? '▶ Lanjut' : '⏸ Jeda';
+            pauseInline.textContent = paused ? '▶ Lanjut' : '⏸ Jeda';
+        }
+        function skipCurrent() {
+            playDing();
+            currentIndex++;
+            if (currentIndex >= activities.length) {
+                updateOverlayUI(); return;
+            }
+            currentRemaining = (activities[currentIndex].minutes || 0) * 60;
+            updateOverlayUI();
+        }
+
+        function endSession() {
+            clearInterval(timer); timer = null;
+            timerTitle.textContent = 'Selesai 🎉';
+            bigTime.textContent = '00:00';
+            nextLabel.textContent = 'Semua kegiatan selesai';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                stopInline.style.display = 'none';
+                pauseInline.style.display = 'none';
+                skipInline.style.display = 'none';
+                currentIndex = 0; currentRemaining = 0; totalElapsed = 0; paused = false;
+                renderList(); computeTotals();
+            }, 1300);
+        }
+
+        function stopSession() {
+            if (!confirm('Berhenti dan kembali ke tampilan awal?')) return;
+            clearInterval(timer); timer = null;
+            overlay.style.display = 'none';
+            stopInline.style.display = 'none';
+            pauseInline.style.display = 'none';
+            skipInline.style.display = 'none';
+            currentIndex = 0; currentRemaining = 0; totalElapsed = 0; paused = false;
+            renderList(); computeTotals();
+        }
+
+        stopInline.onclick = stopSession;
+        pauseInline.onclick = pauseToggle;
+        skipInline.onclick = skipCurrent;
+
+        pauseBtn.onclick = pauseToggle;
+        skipBtn.onclick = skipCurrent;
+        stopBtn.onclick = stopSession;
+
+        addBtn.onclick = () => addActivity('Kegiatan baru', 5);
+        startBtn.onclick = startSession;
+        resetBtn.onclick = () => {
+            if (!confirm('Reset semua jadwal (hapus semua)?')) return;
+            activities = []; save(); renderList(); computeTotals();
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ') { e.preventDefault(); pauseToggle(); }
+            if (e.key === 'n') skipCurrent();
+            if (e.key === 'Escape' && overlay.style.display === 'flex') stopSession();
+        });
+
+        load();
+        window.activities = activities;
+    </script>
+</body>
+
+</html>
