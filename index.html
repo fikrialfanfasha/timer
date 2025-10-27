@@ -1,12 +1,10 @@
-
-
 <!doctype html>
 <html lang="id">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Penghitung Waktu Kegiatan</title>
+    <title>Penghitung Waktu Kegiatan - @fikrialfanf</title>
     <style>
         :root {
             --bg: #0b1116;
@@ -311,9 +309,11 @@
         <header>
             <div class="logo">⏱</div>
             <div>
-                <h1>Penghitung Waktu Kegiatan</h1>
-                <p class="lead">Atur jadwal kegiatan Anda lalu mulai hitung mundur , otomatis berpindah ke kegiatan
-                    berikutnya.</p>
+                <h1>Penghitung Waktu Kegiatan - @fikrialfanf</h1>
+                <p class="lead">
+                    Atur waktu kegiatan Anda lalu mulai hitung mundur , otomatis berpindah ke kegiatan
+                    berikutnya.
+                </p>
             </div>
         </header>
         <div class="card">
@@ -346,7 +346,8 @@
         <div id="timerHeader">
             <div
                 style="width:78px;height:78px;background:linear-gradient(135deg,#ff8a9a,#ffb86b);border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:700">
-                ⏱</div>
+                ⏱
+            </div>
             <div id="timerTitle">Nama Kegiatan</div>
             <div id="nextLabel">Selanjutnya: -</div>
         </div>
@@ -361,7 +362,6 @@
                 <div class="val" id="elapsed">00:00</div>
             </div>
         </div>
-        
         <div class="timer-controls">
             <button class="btn ghost" id="pauseBtn">⏸ Jeda</button>
             <button class="btn ghost" id="skipBtn">⏭ Lewati</button>
@@ -395,7 +395,7 @@
 
         let timer = null;
         let currentIndex = 0;
-        let currentRemaining = 0; 
+        let currentRemaining = 0;
         let totalElapsed = 0;
         let paused = false;
 
@@ -489,17 +489,22 @@
         function playDing() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const o = ctx.createOscillator();
-                const g = ctx.createGain();
-                o.type = 'sine'; o.frequency.value = 880;
-                g.gain.value = 0.0001;
-                o.connect(g); g.connect(ctx.destination);
-                o.start();
-                g.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + 0.01);
-                g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.25);
-                setTimeout(() => { o.stop(); ctx.close(); }, 300);
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(1200, ctx.currentTime);
+                gain.gain.setValueAtTime(0.5, ctx.currentTime); // lebih besar
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start();
+                osc.stop(ctx.currentTime + 0.4);
             } catch (e) {
-                try { ding.play(); } catch (err) { }
+                ding.volume = 1;
+                ding.play();
             }
         }
 
