@@ -338,7 +338,6 @@
             </div>
         </div>
     </div>
-    <!-- Timer overlay (fullscreen view) -->
     <div id="timerOverlay">
         <div id="timerHeader">
             <div
@@ -365,9 +364,7 @@
         </div>
     </div>
     <audio id="ding" src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="></audio>
-    <!-- tiny silent placeholder (browsers require allowed sound; you can replace with real ding) -->
     <script>
-        // Model & elements
         let activities = [];
         const listEl = document.getElementById('list');
         const addBtn = document.getElementById('addBtn');
@@ -375,12 +372,10 @@
         const resetBtn = document.getElementById('resetBtn');
         const totalMinutesEl = document.getElementById('totalMinutes');
 
-        // inline controls (visible in card while running optionally)
         const stopInline = document.getElementById('stopInline');
         const pauseInline = document.getElementById('pauseInline');
         const skipInline = document.getElementById('skipInline');
 
-        // overlay timer
         const overlay = document.getElementById('timerOverlay');
         const bigTime = document.getElementById('bigTime');
         const timerTitle = document.getElementById('timerTitle');
@@ -391,17 +386,14 @@
         const skipBtn = document.getElementById('skipBtn');
         const stopBtn = document.getElementById('stopBtn');
 
-        // audio ding (replace src above with real ding if desired)
         const ding = document.getElementById('ding');
 
-        // timer state
         let timer = null;
         let currentIndex = 0;
-        let currentRemaining = 0; // seconds
+        let currentRemaining = 0; 
         let totalElapsed = 0;
         let paused = false;
 
-        // Helpers
         function save() { localStorage.setItem('event_timer_v2', JSON.stringify(activities)); }
         function load() {
             try { const raw = localStorage.getItem('event_timer_v2'); if (raw) activities = JSON.parse(raw); } catch (e) { activities = []; } if (!Array.isArray(activities)) activities = []; if (activities.length === 0) { // seed example if empty
@@ -450,14 +442,12 @@
 
         function updateOverlayUI() {
             if (currentIndex >= activities.length) {
-                // finished
                 endSession();
                 return;
             }
             timerTitle.textContent = activities[currentIndex].title || '-';
             bigTime.textContent = secondsToMMSS(currentRemaining);
             elapsedEl.textContent = secondsToMMSS(totalElapsed);
-            // remaining total from current activity inclusive
             const remainingTotalSeconds = activities.slice(currentIndex).reduce((acc, a, idx) => acc + ((idx === 0 ? currentRemaining : (a.minutes * 60)) || 0), 0);
             remainingTotal.textContent = secondsToMMSS(remainingTotalSeconds);
             nextLabel.textContent = 'Selanjutnya: ' + (activities[currentIndex + 1] ? activities[currentIndex + 1].title : '(Selesai)');
@@ -465,18 +455,14 @@
 
         function startSession() {
             if (activities.length === 0) { alert('Tambahkan kegiatan terlebih dahulu.'); return; }
-            // enter overlay
             overlay.style.display = 'flex';
             currentIndex = 0; totalElapsed = 0; paused = false;
             currentRemaining = (activities[0].minutes || 0) * 60;
             updateOverlayUI();
-            // show inline controls
             stopInline.style.display = 'inline-block';
             pauseInline.style.display = 'inline-block';
             skipInline.style.display = 'inline-block';
-            // start tick
             timer = setInterval(tick, 1000);
-            // scroll to top so fullscreen overlay visible on some small screens
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -485,11 +471,9 @@
             currentRemaining--; totalElapsed++;
             if (currentRemaining <= 0) {
                 playDing();
-                // move to next
                 currentIndex++;
                 if (currentIndex >= activities.length) {
                     updateOverlayUI();
-                    // will end next loop
                     return;
                 }
                 currentRemaining = (activities[currentIndex].minutes || 0) * 60;
